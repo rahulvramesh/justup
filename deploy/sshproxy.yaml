@@ -1,0 +1,128 @@
+# Justup SSH Proxy Deployment
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: justup-ssh-host-key
+  namespace: justup-system
+type: Opaque
+# Note: Generate a host key and add it here, or let the proxy generate one
+# To generate: ssh-keygen -t ed25519 -f ssh_host_ed25519_key -N ''
+# Then base64 encode: cat ssh_host_ed25519_key | base64
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: justup-sshproxy-data
+  namespace: justup-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: justup-sshproxy
+  namespace: justup-system
+  labels:
+    app.kubernetes.io/name: justup
+    app.kubernetes.io/component: sshproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: justup-sshproxy
+  template:
+    metadata:
+      labels:
+        app: justup-sshproxy
+        app.kubernetes.io/name: justup
+        app.kubernetes.io/component: sshproxy
+    spec:
+      serviceAccountName: justup-controller
+      containers:
+        - name: sshproxy
+          image: justup/sshproxy:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+          args:
+            - --addr
+            - ":2222"
+            - --host-key
+            - /etc/justup/ssh_host_ed25519_key
+            - --db
+            - /var/lib/justup/justup.db
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/justup
+            - name: host-key
+              mountPath: /etc/justup
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 2222
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 2222
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: justup-sshproxy-data
+        - name: host-key
+          secret:
+            secretName: justup-ssh-host-key
+            defaultMode: 0600
+            optional: true  # Allow proxy to generate key if not provided
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: justup-sshproxy
+  namespace: justup-system
+  labels:
+    app.kubernetes.io/name: justup
+    app.kubernetes.io/component: sshproxy
+spec:
+  type: LoadBalancer
+  selector:
+    app: justup-sshproxy
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: 2222
+      protocol: TCP
+---
+# Alternative: Use NodePort if LoadBalancer is not available
+# Uncomment and modify as needed
+#
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: justup-sshproxy-nodeport
+#   namespace: justup-system
+# spec:
+#   type: NodePort
+#   selector:
+#     app: justup-sshproxy
+#   ports:
+#     - name: ssh
+#       port: 22
+#       targetPort: 2222
+#       nodePort: 30022
+#       protocol: TCP

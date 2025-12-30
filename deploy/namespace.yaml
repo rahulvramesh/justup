@@ -1,0 +1,17 @@
+# Justup Kubernetes Namespaces
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: justup-system
+  labels:
+    app.kubernetes.io/name: justup
+    app.kubernetes.io/component: system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: justup-workspaces
+  labels:
+    app.kubernetes.io/name: justup
+    app.kubernetes.io/component: workspaces

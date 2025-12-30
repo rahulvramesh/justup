@@ -1,0 +1,60 @@
+# Justup RBAC Configuration
+---
+# Service account for SSH proxy and control plane
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: justup-controller
+  namespace: justup-system
+---
+# ClusterRole for managing workspaces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: justup-controller
+rules:
+  # Manage pods (workspaces)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Manage persistent volume claims (workspace storage)
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Manage secrets (SSH keys)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Manage services (optional, for direct pod access)
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Pod exec and logs (for debugging)
+  - apiGroups: [""]
+    resources: ["pods/exec", "pods/log", "pods/portforward"]
+    verbs: ["get", "create"]
+  # Read namespaces
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+---
+# Bind ClusterRole to ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: justup-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: justup-controller
+subjects:
+  - kind: ServiceAccount
+    name: justup-controller
+    namespace: justup-system
+---
+# Service account for workspace pods (minimal permissions)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: justup-workspace
+  namespace: justup-workspaces

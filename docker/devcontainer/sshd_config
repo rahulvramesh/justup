@@ -1,0 +1,45 @@
+# Justup SSH Server Configuration
+
+Port 22
+ListenAddress 0.0.0.0
+Protocol 2
+
+# Host keys
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+# Authentication
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Authorized keys location
+AuthorizedKeysFile /home/dev/.ssh/authorized_keys
+
+# Security
+X11Forwarding yes
+AllowAgentForwarding yes
+AllowTcpForwarding yes
+PermitTunnel yes
+GatewayPorts no
+
+# Performance
+UseDNS no
+MaxStartups 10:30:60
+
+# Keep connections alive
+ClientAliveInterval 60
+ClientAliveCountMax 3
+TCPKeepAlive yes
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Subsystems
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Allow dev user
+AllowUsers dev
