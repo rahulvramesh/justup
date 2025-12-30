@@ -352,15 +352,12 @@ func buildPod(podName, pvcName, secretName string, opts WorkspaceOptions) *corev
 		},
 	}
 
-	// Add Docker socket mount if DinD is enabled
+	// Add Docker connection if DinD is enabled
+	// Use TCP connection to the DinD sidecar (more reliable than socket sharing)
 	if opts.EnableDinD {
-		workspaceContainer.VolumeMounts = append(workspaceContainer.VolumeMounts, corev1.VolumeMount{
-			Name:      "docker-socket",
-			MountPath: "/var/run/docker.sock",
-		})
 		workspaceContainer.Env = append(workspaceContainer.Env, corev1.EnvVar{
 			Name:  "DOCKER_HOST",
-			Value: "unix:///var/run/docker.sock",
+			Value: "tcp://localhost:2375",
 		})
 	}
 
