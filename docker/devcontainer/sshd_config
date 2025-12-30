@@ -15,10 +15,6 @@ PasswordAuthentication no
 ChallengeResponseAuthentication no
 UsePAM no
 
-# Container compatibility - disable privilege separation
-# This is safe since we run as a dedicated container
-UsePrivilegeSeparation no
-
 # Authorized keys location
 AuthorizedKeysFile /home/dev/.ssh/authorized_keys
 

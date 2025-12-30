@@ -5,6 +5,10 @@ set -e
 mkdir -p /run/sshd
 chmod 755 /run/sshd
 
+# Unlock the dev user account (required for SSH key authentication)
+# The account is locked by default since no password is set
+passwd -u dev 2>/dev/null || usermod -p '*' dev 2>/dev/null || true
+
 # Generate SSH host keys if they don't exist
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
     echo "Generating RSA host key..."

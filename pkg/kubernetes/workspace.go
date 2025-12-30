@@ -314,8 +314,9 @@ func buildPod(podName, pvcName, secretName string, opts WorkspaceOptions) *corev
 
 	// Main workspace container
 	workspaceContainer := corev1.Container{
-		Name:  "workspace",
-		Image: opts.Image,
+		Name:            "workspace",
+		Image:           opts.Image,
+		ImagePullPolicy: corev1.PullAlways,
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "ssh",
@@ -467,6 +468,8 @@ func buildPod(podName, pvcName, secretName string, opts WorkspaceOptions) *corev
 			Annotations: map[string]string{
 				GitURLAnnotation: opts.GitURL,
 				BranchAnnotation: opts.Branch,
+				// Disable AppArmor for SSH to work properly in containers
+				"container.apparmor.security.beta.kubernetes.io/workspace": "unconfined",
 			},
 		},
 		Spec: corev1.PodSpec{
