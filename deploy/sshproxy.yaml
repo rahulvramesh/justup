@@ -45,7 +45,7 @@ spec:
       serviceAccountName: justup-controller
       containers:
         - name: sshproxy
-          image: justup/sshproxy:latest
+          image: ghcr.io/rahulvramesh/justup/sshproxy:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: ssh

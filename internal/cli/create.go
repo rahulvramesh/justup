@@ -41,7 +41,7 @@ Examples:
 func init() {
 	createCmd.Flags().StringVarP(&createName, "name", "n", "", "Workspace name (defaults to repo name)")
 	createCmd.Flags().StringVarP(&createBranch, "branch", "b", "main", "Git branch to clone")
-	createCmd.Flags().StringVar(&createImage, "image", "justup/devcontainer:latest", "Container image to use")
+	createCmd.Flags().StringVar(&createImage, "image", "ghcr.io/rahulvramesh/justup/devcontainer:latest", "Container image to use")
 	createCmd.Flags().StringVar(&createCPU, "cpu", "1", "CPU limit")
 	createCmd.Flags().StringVar(&createMemory, "memory", "2Gi", "Memory limit")
 	createCmd.Flags().StringVar(&createStorage, "storage", "10Gi", "Persistent storage size")
