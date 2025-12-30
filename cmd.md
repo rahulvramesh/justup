@@ -84,7 +84,7 @@ kubectl cp ~/.justup/justup.db justup-system/$(kubectl get pods -n justup-system
 kubectl rollout restart deployment justup-sshproxy -n justup-system
 
 # SSH via proxy (use workspace name as username)
-ssh gin-test@<PROXY_EXTERNAL_IP>
+ssh -p 2222 gin-test@<PROXY_EXTERNAL_IP>
 ```
 
 ### VS Code SSH Config
@@ -93,6 +93,7 @@ Add to `~/.ssh/config`:
 ```
 Host *.justup
     HostName 142.132.221.35  # Your proxy external IP
+    Port 2222
     User %n
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null

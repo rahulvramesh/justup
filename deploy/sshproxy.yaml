@@ -104,7 +104,7 @@ spec:
     app: justup-sshproxy
   ports:
     - name: ssh
-      port: 22
+      port: 2222
       targetPort: 2222
       protocol: TCP
 ---
