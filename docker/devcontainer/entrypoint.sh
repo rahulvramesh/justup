@@ -12,18 +12,26 @@ if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
     ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ''
 fi
 
-# Fix permissions for SSH directory
-if [ -d /home/dev/.ssh ]; then
-    chown -R dev:dev /home/dev/.ssh
-    chmod 700 /home/dev/.ssh
-    if [ -f /home/dev/.ssh/authorized_keys ]; then
-        chmod 600 /home/dev/.ssh/authorized_keys
-    fi
+# Setup SSH authorized_keys from mounted secret
+# The secret is mounted read-only, so we copy to a writable location
+SSH_KEYS_SOURCE="/etc/justup/ssh-keys"
+SSH_DIR="/home/dev/.ssh"
+
+mkdir -p "$SSH_DIR"
+chown dev:dev "$SSH_DIR"
+chmod 700 "$SSH_DIR"
+
+# Copy authorized_keys from mounted secret if it exists
+if [ -f "$SSH_KEYS_SOURCE/authorized_keys" ]; then
+    echo "Setting up SSH authorized keys..."
+    cp "$SSH_KEYS_SOURCE/authorized_keys" "$SSH_DIR/authorized_keys"
+    chown dev:dev "$SSH_DIR/authorized_keys"
+    chmod 600 "$SSH_DIR/authorized_keys"
 fi
 
-# Fix ownership of workspace directory
+# Fix ownership of workspace directory (ignore errors for mounted volumes)
 if [ -d /home/dev/workspace ]; then
-    chown -R dev:dev /home/dev/workspace
+    chown -R dev:dev /home/dev/workspace 2>/dev/null || true
 fi
 
 # Clone repository if GIT_URL is set and workspace is empty

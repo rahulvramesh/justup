@@ -340,7 +340,7 @@ func buildPod(podName, pvcName, secretName string, opts WorkspaceOptions) *corev
 			},
 			{
 				Name:      "ssh-keys",
-				MountPath: "/home/dev/.ssh",
+				MountPath: "/etc/justup/ssh-keys",
 				ReadOnly:  true,
 			},
 		},
