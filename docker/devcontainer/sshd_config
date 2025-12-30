@@ -13,7 +13,11 @@ PermitRootLogin no
 PubkeyAuthentication yes
 PasswordAuthentication no
 ChallengeResponseAuthentication no
-UsePAM yes
+UsePAM no
+
+# Container compatibility - disable privilege separation
+# This is safe since we run as a dedicated container
+UsePrivilegeSeparation no
 
 # Authorized keys location
 AuthorizedKeysFile /home/dev/.ssh/authorized_keys

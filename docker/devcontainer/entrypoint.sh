@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Create required directories for sshd
+mkdir -p /run/sshd
+chmod 755 /run/sshd
+
 # Generate SSH host keys if they don't exist
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
     echo "Generating RSA host key..."

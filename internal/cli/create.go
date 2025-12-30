@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rahulvramesh/justup/pkg/database"
 	"github.com/rahulvramesh/justup/pkg/kubernetes"
 	"github.com/spf13/cobra"
 )
@@ -63,6 +64,24 @@ func runCreate(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("Creating workspace '%s' from %s...\n", createName, githubURL)
 
+	// Load SSH keys from database
+	sshPubKeys := ""
+	db, err := database.Open(getDBPath())
+	if err == nil {
+		defer db.Close()
+		user, err := db.GetOrCreateDefaultUser()
+		if err == nil {
+			keys, err := db.ListSSHKeys(user.ID)
+			if err == nil && len(keys) > 0 {
+				var keyLines []string
+				for _, key := range keys {
+					keyLines = append(keyLines, key.PublicKey)
+				}
+				sshPubKeys = strings.Join(keyLines, "\n")
+			}
+		}
+	}
+
 	// Create Kubernetes client
 	client, err := kubernetes.NewClient()
 	if err != nil {
@@ -71,14 +90,15 @@ func runCreate(cmd *cobra.Command, args []string) {
 
 	// Create workspace options
 	opts := kubernetes.WorkspaceOptions{
-		Name:      createName,
-		GitURL:    githubURL,
-		Branch:    createBranch,
-		Image:     createImage,
-		CPU:       createCPU,
-		Memory:    createMemory,
-		Storage:   createStorage,
+		Name:       createName,
+		GitURL:     githubURL,
+		Branch:     createBranch,
+		Image:      createImage,
+		CPU:        createCPU,
+		Memory:     createMemory,
+		Storage:    createStorage,
 		EnableDinD: createDinD,
+		SSHPubKey:  sshPubKeys,
 	}
 
 	// Create the workspace
